@@ -1,7 +1,7 @@
 import torch
 from sklearn.metrics import classification_report
-from dgcnn import DGCNN
-from data_loader import test_loader
+from projet2.models.dgcnn import DGCNN
+from projet2.utils.data_loader import test_loader
 
 # Charger le modèle
 model = DGCNN(num_classes=6).to(torch.device('cuda' if torch.cuda.is_available() else 'cpu'))

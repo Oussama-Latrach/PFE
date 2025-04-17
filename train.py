@@ -1,8 +1,8 @@
 import torch
 import torch.optim as optim
 import torch.nn as nn
-from dgcnn import DGCNN
-from data_loader import get_loaders
+from projet2.models.dgcnn import DGCNN
+from projet2.utils.data_loader import get_loaders
 from sklearn.metrics import classification_report
 import numpy as np
 import matplotlib.pyplot as plt
@@ -118,7 +118,7 @@ def main():
     torch.save(model.state_dict(), 'models/final_model.pth')
 
     # Sauvegarde des métriques
-    np.save('metrics/training_metrics.npy', metrics)
+    np.save('experiments/training_metrics.npy', metrics)
 
     # Visualisation des courbes
     plt.figure(figsize=(12, 5))
