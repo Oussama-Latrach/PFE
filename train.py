@@ -1,8 +1,8 @@
 import torch
 import torch.optim as optim
 import torch.nn as nn
-from projet2.models.dgcnn import DGCNN
-from projet2.utils.data_loader import get_loaders
+from models.dgcnn import DGCNN
+from utils.data_loader import get_loaders
 from sklearn.metrics import classification_report
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,8 +22,8 @@ def main():
     weight_decay = 1e-4
 
     # Dossiers de sauvegarde
-    os.makedirs('metrics', exist_ok=True)
-    os.makedirs('models', exist_ok=True)
+    os.makedirs('experiments', exist_ok=True)
+    os.makedirs('experiments', exist_ok=True)
 
     # Data Loaders
     train_loader, val_loader, test_loader = get_loaders(batch_size)
@@ -112,10 +112,10 @@ def main():
 
         if val_acc > best_val_acc:
             best_val_acc = val_acc
-            torch.save(model.state_dict(), 'models/best_model.pth')
+            torch.save(model.state_dict(), 'experiments/best_model.pth')
 
     # Sauvegarde finale du modèle
-    torch.save(model.state_dict(), 'models/final_model.pth')
+    torch.save(model.state_dict(), 'experiments/final_model.pth')
 
     # Sauvegarde des métriques
     np.save('experiments/training_metrics.npy', metrics)
@@ -142,12 +142,12 @@ def main():
     plt.legend()
 
     plt.tight_layout()
-    plt.savefig('metrics/training_curves.png')
+    plt.savefig('experiments/training_curves.png')
     plt.close()
 
     # Final Evaluation
     print("\nTesting best model...")
-    model.load_state_dict(torch.load('models/best_model.pth'))
+    model.load_state_dict(torch.load('experiments/best_model.pth'))
     test_loss, test_acc = evaluate(model, test_loader)
     print(f"\nFinal Test Loss: {test_loss:.4f} | Accuracy: {test_acc:.2%}")
 

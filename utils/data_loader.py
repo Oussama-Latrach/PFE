@@ -1,42 +1,72 @@
+"""
+Data loading utilities for point cloud classification.
+"""
+
 import torch
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
 
 
 class PointCloudDataset(Dataset):
+    """Custom Dataset for point cloud classification."""
+
     def __init__(self, file_path):
+        """
+        Args:
+            file_path: Path to .npy file containing point cloud data
+        """
         data = np.load(file_path)
-        self.features = torch.tensor(data[:, :5], dtype=torch.float32)  # [N, 5]
-        self.labels = torch.tensor(data[:, 5], dtype=torch.long) - 1  # Convert to 0-5
+        # Features: x,y,z, return_number, number_of_returns
+        self.features = torch.tensor(data[:, :5], dtype=torch.float32)
+        # Labels: classification (converted to 0-based index)
+        self.labels = torch.tensor(data[:, 5], dtype=torch.long) - 1
 
     def __len__(self):
         return len(self.features)
 
     def __getitem__(self, idx):
-        return self.features[idx], self.labels[idx]  # [5], [1]
+        return self.features[idx], self.labels[idx]
 
 
 def get_loaders(batch_size=32):
-    train_dataset = PointCloudDataset("data/extracted_data/train_extracted.npy")
-    val_dataset = PointCloudDataset("data/extracted_data/val_extracted.npy")
-    test_dataset = PointCloudDataset("data/extracted_data/test_extracted.npy")
+    """Create data loaders for train/val/test sets."""
+    print(" Loading datasets...")
 
-    train_loader = DataLoader(train_dataset,
-                              batch_size=batch_size,
-                              shuffle=True,
-                              num_workers=0,
-                              pin_memory=True if torch.cuda.is_available() else False)
+    # Initialize datasets
+    train_dataset = PointCloudDataset("E:/cours_geomatique_3eme_annee/PFE/pratique/projet2/data/extracted_data/train_extracted.npy")
+    val_dataset = PointCloudDataset("E:/cours_geomatique_3eme_annee/PFE/pratique/projet2/data/extracted_data/val_extracted.npy")
+    test_dataset = PointCloudDataset("E:/cours_geomatique_3eme_annee/PFE/pratique/projet2/data/extracted_data/test_extracted.npy")
 
-    val_loader = DataLoader(val_dataset,
-                            batch_size=batch_size,
-                            shuffle=False,
-                            num_workers=0,
-                            pin_memory=True if torch.cuda.is_available() else False)
+    print(f" Dataset sizes:")
+    print(f"  - Train: {len(train_dataset):,} points")
+    print(f"  - Val:   {len(val_dataset):,} points")
+    print(f"  - Test:  {len(test_dataset):,} points")
 
-    test_loader = DataLoader(test_dataset,
-                             batch_size=batch_size,
-                             shuffle=False,
-                             num_workers=0,
-                             pin_memory=True if torch.cuda.is_available() else False)
+    # Create data loaders
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=0,
+        pin_memory=torch.cuda.is_available())
+
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=0,
+        pin_memory=torch.cuda.is_available())
+
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=0,
+        pin_memory=torch.cuda.is_available())
+
+    print(f"\n Batch size: {batch_size}")
+    print(f" Train batches: {len(train_loader)}")
+    print(f" Val batches:   {len(val_loader)}")
+    print(f" Test batches:  {len(test_loader)}")
 
     return train_loader, val_loader, test_loader

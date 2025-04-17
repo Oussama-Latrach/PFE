@@ -1,16 +1,30 @@
+"""
+Data preprocessing pipeline for point cloud data.
+Converts LAZ files to normalized numpy arrays with class remapping.
+"""
+
 import laspy
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
+from collections import Counter
 
-# Fonction pour remapper les classes non intéressantes vers la classe 1 (Unclassified)
 def remap_classification(value, classes_cibles):
-    return value if value in classes_cibles else 1  # Remplacer les autres par la classe 1
+    """Remap non-target classes to class 1 (Unclassified)."""
+    return value if value in classes_cibles else 1
 
-# Chargement du fichier LAZ
-fichier_laz = "data/LHD_FXX_0645_6859_PTS_O_LAMB93_IGN69.copc.laz"  # Remplace par ton fichier
-las = laspy.read(fichier_laz)
+# Configuration
+input_file = "data/LHD_FXX_0645_6859_PTS_O_LAMB93_IGN69.copc.laz"
+output_file = "data.npy"
+target_classes = [1, 2, 3, 4, 5, 6]  # Classes to keep
 
-# Extraire les attributs (x, y, z, ReturnNumber, NumberOfReturns, Classification)
+print(" Starting data preprocessing...")
+
+# Load LAZ file
+print(f" Loading LAZ file: {input_file}")
+las = laspy.read(input_file)
+
+# Extract attributes
+print(" Extracting point cloud attributes...")
 x = las.x
 y = las.y
 z = las.z
@@ -18,29 +32,33 @@ rn = las.return_number
 nr = las.number_of_returns
 cls = las.classification
 
-# Filtrage des classes intéressantes (classes 1, 2, 3, 4, 5, 6) et affectation des autres à 1 (Unclassified)
-classes_interessees = [1, 2, 3, 4, 5, 6]  # Les classes que tu veux garder
-vectorized_remap = np.vectorize(lambda x: remap_classification(x, classes_interessees))
+# Remap classes
+print(" Remapping classes...")
+vectorized_remap = np.vectorize(lambda x: remap_classification(x, target_classes))
 cls_remapped = vectorized_remap(cls)
 
-# Normalisation des coordonnées (x, y, z) entre 0 et 1
+# Normalize coordinates
+print(" Normalizing coordinates...")
 scaler = MinMaxScaler()
-xyz = np.column_stack((x, y, z))  # Concaténer x, y, z
+xyz = np.column_stack((x, y, z))
 xyz_normalized = scaler.fit_transform(xyz)
 
-# Combinaison des attributs (x, y, z, ReturnNumber, NumberOfReturns, classification)
+# Combine features
+print(" Combining features...")
 data = np.column_stack((xyz_normalized, rn, nr, cls_remapped))
 
-# Sauvegarder les données dans un fichier .npy
-np.save("data.npy", data)
+# Save processed data
+print(f" Saving processed data to {output_file}")
+np.save(output_file, data)
 
-# Afficher un aperçu des 5 premières lignes du fichier de données
-print("Extrait des 5 premières lignes des données traitées :")
+# Display sample data
+print("\n Sample of processed data (first 5 points):")
 print(data[:5])
 
-# Statistiques des classes après remappage
-from collections import Counter
-compte = Counter(cls_remapped)
-print("\nDistribution des classes après remappage (classe 1 = Unclassified) :")
-for k, v in sorted(compte.items()):
-    print(f"  - Classe {k}: {v} points")
+# Display class distribution
+class_counts = Counter(cls_remapped)
+print("\n Class distribution after remapping:")
+for cls, count in sorted(class_counts.items()):
+    print(f"  - Class {cls}: {count:,} points")
+
+print("\n Preprocessing completed successfully!")
