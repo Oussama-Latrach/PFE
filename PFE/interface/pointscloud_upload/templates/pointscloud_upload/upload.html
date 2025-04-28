@@ -6,189 +6,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Point Cloud</title>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
+        /* ... (conservez votre CSS existant) ... */
+
+        .progress-container {
+            display: none;
             width: 100%;
-            height: 100%;
-            font-family: Arial, sans-serif;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            background: url('{% static "home_slider1.jpg" %}') no-repeat center/cover;
-            text-align: center;
+            max-width: 500px;
+            margin: 20px auto;
+            background-color: #f1f1f1;
+            border-radius: 5px;
         }
 
-        .app-name {
-            position: absolute;
-            top: 20px;
-            left: 50px;
-            color: #060606;
-            font-size: 3em;
-            font-weight: bold;
-        }
-
-        .nav {
-            position: absolute;
-            top: 20px;
-            right: 50px;
-            display: flex;
-            gap: 30px;
-            align-items: center;
-        }
-
-        .nav a {
-            color: #0c0c0c;
-            text-decoration: none;
-            font-weight: bold;
-            transition: color 0.3s ease;
-            font-size: 1.5em;
-        }
-
-        .nav a:hover {
-            color: #f77;
-        }
-
-        .header-content h1 {
-            font-size: 3em;
-            margin: 0;
-            color: #050505;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .header-content h2 {
-            font-size: 2em;
-            margin: 10px 0 20px;
-            color: #020202;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .header-content .button {
-            display: inline-block;
-            padding: 10px 20px;
-            font-size: 1.2em;
-            color: #fff;
+        .progress-bar {
+            width: 0%;
+            height: 30px;
             background-color: #5372F0;
-            border: none;
             border-radius: 5px;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+            transition: width 0.3s;
         }
 
-        .header-content .button:hover {
-            background-color: #2c52ed;
-        }
-
-        .file-input-wrapper {
-            margin-top: 20px;
-        }
-
-        .file-input-wrapper input[type="file"] {
-            padding: 10px;
-            font-size: 1.2em;
-        }
-
-        .buttons {
+        .results-button {
             display: none;
             margin-top: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .buttons .button {
-            margin: 10px;
-        }
-
-        .profile-button {
-            color: #fff;
-            background-color: #FFA500;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            font-size: 1.5em;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
-            cursor: pointer;
-        }
-
-        .profile-button:hover {
-            background-color: #FF8C00;
-        }
-
-        .dropdown {
-            position: relative;
-            display: inline-block;
-        }
-
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: #f9f9f9;
-            min-width: 160px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 1;
-            border-radius: 5px;
-            padding: 10px;
-            right: 0;
-        }
-
-        .dropdown-content a {
-            color: #333;
-            padding: 8px 0;
-            display: block;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
-        }
-
-        .dropdown-content a:hover {
-            background-color: #ddd;
-        }
-
-        .dropdown:hover .dropdown-content {
-            display: block;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-            padding-top: 60px;
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 5% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
         }
     </style>
 </head>
@@ -209,17 +51,34 @@
 
     <div class="header-content">
         <h1>Upload Point Cloud</h1>
-        <h2>Upload your .npy file and explore the point cloud</h2>
+        <h2>Upload your .npy file and launch classification</h2>
 
-        <div class="file-input-wrapper">
-            <input type="file" id="file-input" accept=".npy" />
-        </div>
+        <form method="post" enctype="multipart/form-data" id="uploadForm">
+            {% csrf_token %}
+            <div class="file-input-wrapper">
+                <input type="file" id="file-input" name="pointcloud" accept=".npy" required />
+            </div>
 
-        <div class="buttons">
-            <a href="#" id="show-2d" class="button">View in 2D</a>
-            <a href="#" id="show-3d" class="button">View in 3D</a>
-            <a href="#" class="button">Launch Classification</a>
-        </div>
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar" id="progressBar">0%</div>
+            </div>
+
+            {% if file_uploaded %}
+            <div class="file-info" id="file-info" style="display: block;">
+                <p><strong>File Name:</strong> <span id="file-name">{{ filename }}</span></p>
+                <button type="button" onclick="launchClassification()"
+                        class="button" style="margin-top: 20px;">
+                    Launch Classification
+                </button>
+            </div>
+            {% else %}
+            <div class="file-info" id="file-info">
+                <p><strong>File Name:</strong> <span id="file-name"></span></p>
+                <p><strong>File Size:</strong> <span id="file-size"></span></p>
+                <p><strong>File Type:</strong> <span id="file-type"></span></p>
+            </div>
+            {% endif %}
+        </form>
     </div>
 
     <div id="contactModal" class="modal">
@@ -232,6 +91,40 @@
     </div>
 
     <script>
+        function launchClassification() {
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+
+            progressContainer.style.display = 'block';
+
+            // Simulation de progression (remplacer par des vraies updates via AJAX)
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 5;
+                progressBar.style.width = `${progress}%`;
+                progressBar.textContent = `${progress}%`;
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    window.location.href = "{% url 'launch_classification' %}";
+                }
+            }, 300);
+        }
+
+        document.getElementById('file-input').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById('file-info').style.display = 'block';
+                document.getElementById('file-name').textContent = file.name;
+                document.getElementById('file-size').textContent = (file.size / (1024*1024)).toFixed(2) + ' MB';
+                document.getElementById('file-type').textContent = file.type || 'NPY point cloud';
+
+                // Soumettre automatiquement le formulaire
+                document.getElementById('uploadForm').submit();
+            }
+        });
+
+        // Gestion des événements existants
         document.getElementById('contactBtn').addEventListener('click', function() {
             document.getElementById('contactModal').style.display = 'block';
         });
@@ -243,13 +136,6 @@
         window.addEventListener('click', function(event) {
             if (event.target == document.getElementById('contactModal')) {
                 document.getElementById('contactModal').style.display = 'none';
-            }
-        });
-
-        document.getElementById('file-input').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                document.querySelector('.buttons').style.display = 'flex';
             }
         });
 

@@ -154,7 +154,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Inférence DGCNN pour classification de nuages de points')
     parser.add_argument('input_file', type=str, help='Chemin vers le fichier .npy d\'entrée (5 colonnes)')
-    parser.add_argument('--model', type=str, default='models/best_model.pth',
+    parser.add_argument('--models', type=str, default='models/best_model.pth',
                         help='Chemin vers le modèle entraîné (default: models/best_model.pth)')
 
     args = parser.parse_args()
